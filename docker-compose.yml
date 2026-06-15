@@ -1,0 +1,69 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: qrcode-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-qrcode_pro_db}
+    ports:
+      # Host porti 3308 -> konteyner ichida 3306
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-rootpass}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - qrnet
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qrcode-app
+    restart: unless-stopped
+    environment:
+      # App ichidan MySQL ga konteyner nomi orqali ulanadi (port 3306)
+      DATABASE_URL: "mysql://root:${MYSQL_ROOT_PASSWORD:-rootpass}@mysql:3306/${MYSQL_DATABASE:-qrcode_pro_db}"
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      AUTH_SECRET: ${AUTH_SECRET:-change-me-to-a-long-random-secret}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:5000}
+      NODE_ENV: production
+    expose:
+      - "5000"
+    volumes:
+      # Yuklangan fayllar va QR rasmlar saqlanib qolishi uchun
+      - uploads_data:/app/public/uploads
+      - qr_data:/app/public/qr
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - qrnet
+
+  nginx:
+    image: nginx:alpine
+    container_name: qrcode-nginx
+    restart: unless-stopped
+    ports:
+      # Tashqi 5000 -> nginx -> app:5000
+      - "5000:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - qrnet
+
+volumes:
+  mysql_data:
+  uploads_data:
+  qr_data:
+
+networks:
+  qrnet:
+    driver: bridge

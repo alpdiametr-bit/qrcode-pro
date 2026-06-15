@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum QrType {
+  URL
+  TEXT
+  HTML
+  FILE
+  IMAGE
+}
+
+model QrCode {
+  // O'zgarmas unique id (15-20 belgi). Bu QR havolasining o'zagi.
+  id        String   @id @db.VarChar(32)
+  name      String   @db.VarChar(120)
+  type      QrType   @default(URL)
+
+  // URL / TEXT / HTML uchun matn kontent
+  content   String?  @db.Text
+
+  // FILE / IMAGE uchun yuklangan fayl manzili va nomi
+  fileUrl   String?  @db.VarChar(500)
+  fileName  String?  @db.VarChar(255)
+
+  // QR ko'rinish parametrlari (rang, daraja, hajm)
+  fgColor   String   @default("#0f172a") @db.VarChar(9)
+  bgColor   String   @default("#ffffff") @db.VarChar(9)
+  size      Int      @default(256)
+  level     String   @default("M") @db.VarChar(1)
+
+  // Serverda generatsiya qilingan tayyor QR rasm (public/qr/[id].png)
+  qrImageUrl String? @db.VarChar(500)
+
+  scans     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+}
