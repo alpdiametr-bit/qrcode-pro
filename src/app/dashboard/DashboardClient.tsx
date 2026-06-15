@@ -20,6 +20,7 @@ import { TYPE_META } from "@/lib/types";
 import QrPreview from "@/components/QrPreview";
 import QrEditor from "./QrEditor";
 import QrDetails from "./QrDetails";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function DashboardClient({
   initialItems,
@@ -40,6 +41,12 @@ export default function DashboardClient({
   const [editing, setEditing] = useState<QrCodeItem | null>(null);
 
   const [details, setDetails] = useState<QrCodeItem | null>(null);
+
+  // O'chirish va chiqish tasdiqlash modallari
+  const [toDelete, setToDelete] = useState<QrCodeItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -80,9 +87,11 @@ export default function DashboardClient({
   }
 
   async function remove(item: QrCodeItem) {
-    if (!confirm(`"${item.name}" QR kodini o'chirishni tasdiqlaysizmi?`)) return;
+    setDeleting(true);
     const res = await fetch(`/api/qr/${item.id}`, { method: "DELETE" });
     if (res.ok) setItems((prev) => prev.filter((i) => i.id !== item.id));
+    setDeleting(false);
+    setToDelete(null);
   }
 
   function copyLink(item: QrCodeItem) {
@@ -93,6 +102,7 @@ export default function DashboardClient({
   }
 
   async function logout() {
+    setLoggingOut(true);
     await fetch("/api/auth/logout", { method: "POST" });
     router.replace("/login");
     router.refresh();
@@ -118,7 +128,7 @@ export default function DashboardClient({
             <span className="hidden sm:block text-sm text-slate-400">
               Salom, <span className="text-slate-200 font-medium">{username}</span>
             </span>
-            <button onClick={logout} className="btn-ghost py-2">
+            <button onClick={() => setLogoutOpen(true)} className="btn-ghost py-2">
               <LogoutCurve size={18} />
               <span className="hidden sm:inline">Chiqish</span>
             </button>
@@ -243,7 +253,7 @@ export default function DashboardClient({
                       Tahrirlash
                     </button>
                     <button
-                      onClick={() => remove(item)}
+                      onClick={() => setToDelete(item)}
                       className="btn-danger py-2 px-3"
                       title="O'chirish"
                     >
@@ -270,6 +280,34 @@ export default function DashboardClient({
         item={details}
         appUrl={appUrl}
         onClose={() => setDetails(null)}
+      />
+
+      <ConfirmModal
+        open={!!toDelete}
+        variant="danger"
+        icon="trash"
+        title="QR kodni o'chirish"
+        message={
+          toDelete
+            ? `"${toDelete.name}" butunlay o'chiriladi. Bu amalni ortga qaytarib bo'lmaydi.`
+            : ""
+        }
+        confirmText="O'chirish"
+        loading={deleting}
+        onConfirm={() => toDelete && remove(toDelete)}
+        onCancel={() => setToDelete(null)}
+      />
+
+      <ConfirmModal
+        open={logoutOpen}
+        variant="warning"
+        icon="logout"
+        title="Tizimdan chiqish"
+        message="Hisobingizdan chiqmoqchimisiz?"
+        confirmText="Chiqish"
+        loading={loggingOut}
+        onConfirm={logout}
+        onCancel={() => setLogoutOpen(false)}
       />
     </div>
   );
