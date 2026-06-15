@@ -1,0 +1,6 @@
+# Shell skriptlari har doim LF bo'lishi shart (Docker/Linux uchun)
+*.sh text eol=lf
+docker-entrypoint.sh text eol=lf
+
+# Standart matn fayllari
+* text=auto
