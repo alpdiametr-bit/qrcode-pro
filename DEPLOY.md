@@ -20,13 +20,22 @@ cp .env.example .env
 
 Edit `.env` and set secure values:
 ```env
-MYSQL_ROOT_PASSWORD=your_secure_password
+# MySQL database credentials (for internal database access)
+MYSQL_ROOT_PASSWORD=your_secure_mysql_password
 MYSQL_DATABASE=qrcode_pro_db
+
+# Admin panel login credentials (for web interface access)
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=your_secure_admin_password
+
+# Security
 AUTH_SECRET=your_long_random_secret_key_min_32_chars
 NEXT_PUBLIC_APP_URL=http://172.18.1.3:8090
 ```
+
+**⚠️ IMPORTANT**: MySQL password and Admin password should be **DIFFERENT**
+- Use MySQL password: For database connections only (internal)
+- Use Admin password: For web UI login (http://172.18.1.3:8090)
 
 ### 3. Start Services
 ```bash
