@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   const res = NextResponse.json({ ok: true });
   res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: false, // Set to false for HTTP; use reverse proxy with HTTPS in production
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
