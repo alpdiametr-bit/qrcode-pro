@@ -59,7 +59,7 @@ export default function LoginPage() {
               />
               <input
                 className="input pl-11"
-                placeholder="admin"
+                placeholder="Login"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
@@ -116,7 +116,7 @@ export default function LoginPage() {
           </button>
 
           <p className="text-center text-xs text-slate-500">
-            Standart: <span className="text-slate-300">admin / admin123</span>
+            Admin login credentials must be configured with environment variables.
           </p>
         </form>
       </div>

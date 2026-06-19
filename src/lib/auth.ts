@@ -27,7 +27,8 @@ export async function verifySession(
 }
 
 export function checkCredentials(username: string, password: string): boolean {
-  const u = process.env.ADMIN_USERNAME || "admin";
-  const p = process.env.ADMIN_PASSWORD || "admin123";
+  const u = process.env.ADMIN_USERNAME;
+  const p = process.env.ADMIN_PASSWORD;
+  if (!u || !p) return false;
   return username === u && password === p;
 }
