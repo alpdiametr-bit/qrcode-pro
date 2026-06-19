@@ -17,20 +17,26 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
+      console.log("Logging in with:", { username, password: "***" });
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
+      console.log("Login response status:", res.status);
       const data = await res.json();
+      console.log("Login response data:", data);
       if (!res.ok) {
-        setError(data.error || "Xatolik yuz berdi");
+        setError(data.error || `Xatolik: ${res.status}`);
         return;
       }
+      console.log("Login successful, redirecting to dashboard...");
       router.replace("/dashboard");
       router.refresh();
-    } catch {
-      setError("Serverga ulanib bo'lmadi");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Noma'lum xatolik";
+      console.error("Login error:", errorMsg);
+      setError(`Serverga ulanib bo'lmadi: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
