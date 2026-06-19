@@ -3,16 +3,17 @@ services:
     image: mysql:8.0
     container_name: qrcode-mysql
     restart: unless-stopped
+    env_file: .env
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-qrcode_pro_db}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       # Host porti 3308 -> konteyner ichida 3306
       - "3308:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-rootpass}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -25,6 +26,7 @@ services:
       dockerfile: Dockerfile
     container_name: qrcode-app
     restart: unless-stopped
+    env_file: .env
     environment:
       # App ichidan MySQL ga konteyner nomi orqali ulanadi (port 3306)
       DATABASE_URL: "mysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/${MYSQL_DATABASE}"
